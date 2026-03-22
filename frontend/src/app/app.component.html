@@ -1,0 +1,27 @@
+<div class="app-layout">
+  <nav class="sidebar">
+    <div class="logo">
+      <h2>Trading Journal</h2>
+    </div>
+    <ul class="nav-links">
+      <li>
+        <a routerLink="/dashboard" routerLinkActive="active">
+          <span class="icon">📈</span> 儀表板
+        </a>
+      </li>
+      <li>
+        <a routerLink="/trades" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+          <span class="icon">📋</span> 交易記錄
+        </a>
+      </li>
+      <li>
+        <a routerLink="/trades/new" routerLinkActive="active">
+          <span class="icon">➕</span> 新增交易
+        </a>
+      </li>
+    </ul>
+  </nav>
+  <main class="content">
+    <router-outlet />
+  </main>
+</div>

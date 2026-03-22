@@ -1,0 +1,125 @@
+@if (loading) {
+  <p>載入中...</p>
+} @else if (trade) {
+  <div class="page-header">
+    <h1>{{ trade.symbol }}
+      <span class="badge" [class.long]="trade.direction === 'long'" [class.short]="trade.direction === 'short'">
+        {{ trade.direction === 'long' ? '做多' : '做空' }}
+      </span>
+      <span class="badge" [class.open]="trade.status === 'open'" [class.closed]="trade.status === 'closed'">
+        {{ trade.status === 'open' ? '持倉中' : '已平倉' }}
+      </span>
+    </h1>
+    <div class="header-actions">
+      <a [routerLink]="['/trades', trade.id, 'edit']" class="btn btn-primary">編輯</a>
+      <button class="btn btn-danger" (click)="deleteTrade()">刪除</button>
+      <a routerLink="/trades" class="btn btn-secondary">返回</a>
+    </div>
+  </div>
+
+  @if (trade.pnl != null) {
+    <div class="pnl-banner" [class.profit]="trade.pnl >= 0" [class.loss]="trade.pnl < 0">
+      <div class="pnl-amount">{{ trade.pnl >= 0 ? '+' : '' }}{{ trade.pnl | number:'1.2-2' }}</div>
+      @if (trade.pnl_percent != null) {
+        <div class="pnl-percent">{{ trade.pnl_percent >= 0 ? '+' : '' }}{{ trade.pnl_percent | number:'1.2-2' }}%</div>
+      }
+    </div>
+  }
+
+  <div class="detail-grid">
+    <div class="card">
+      <h3>交易資訊</h3>
+      <div class="info-grid">
+        <div class="info-item">
+          <span class="label">進場價格</span>
+          <span class="value">{{ trade.entry_price | number:'1.2-8' }}</span>
+        </div>
+        <div class="info-item">
+          <span class="label">出場價格</span>
+          <span class="value">{{ trade.exit_price != null ? (trade.exit_price | number:'1.2-8') : '-' }}</span>
+        </div>
+        <div class="info-item">
+          <span class="label">數量</span>
+          <span class="value">{{ trade.quantity }}</span>
+        </div>
+        <div class="info-item">
+          <span class="label">手續費</span>
+          <span class="value">{{ trade.fees | number:'1.2-2' }}</span>
+        </div>
+        <div class="info-item">
+          <span class="label">進場日期</span>
+          <span class="value">{{ trade.entry_date | date:'yyyy/MM/dd' }}</span>
+        </div>
+        <div class="info-item">
+          <span class="label">出場日期</span>
+          <span class="value">{{ trade.exit_date ? (trade.exit_date | date:'yyyy/MM/dd') : '-' }}</span>
+        </div>
+        <div class="info-item">
+          <span class="label">策略</span>
+          <span class="value">{{ trade.strategy || '-' }}</span>
+        </div>
+        <div class="info-item">
+          <span class="label">時間框架</span>
+          <span class="value">{{ trade.timeframe || '-' }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>進場邏輯</h3>
+      <p class="text-content">{{ trade.entry_reason || '尚未填寫' }}</p>
+    </div>
+
+    <div class="card">
+      <h3>出場邏輯</h3>
+      <p class="text-content">{{ trade.exit_reason || '尚未填寫' }}</p>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h3>復盤筆記</h3>
+        @if (!editingNotes) {
+          <button class="btn btn-secondary btn-sm" (click)="editingNotes = true">編輯</button>
+        }
+      </div>
+      @if (editingNotes) {
+        <textarea [(ngModel)]="reviewNotes" rows="6" placeholder="寫下你的復盤心得..."></textarea>
+        <div class="note-actions">
+          <button class="btn btn-primary btn-sm" (click)="saveNotes()">儲存</button>
+          <button class="btn btn-secondary btn-sm" (click)="editingNotes = false">取消</button>
+        </div>
+      } @else {
+        <p class="text-content">{{ trade.review_notes || '尚未填寫復盤筆記，點擊編輯添加' }}</p>
+      }
+    </div>
+
+    @if (trade.rating) {
+      <div class="card">
+        <h3>交易評分</h3>
+        <div class="rating-display">
+          @for (star of [1,2,3,4,5]; track star) {
+            <span class="star" [class.active]="trade.rating && trade.rating >= star">★</span>
+          }
+        </div>
+      </div>
+    }
+
+    @if (parsedTags.length > 0) {
+      <div class="card">
+        <h3>標籤</h3>
+        <div class="tags">
+          @for (tag of parsedTags; track tag) {
+            <span class="tag">{{ tag }}</span>
+          }
+        </div>
+      </div>
+    }
+
+    @if (trade.screenshot_url) {
+      <div class="card">
+        <h3>截圖</h3>
+        <img [src]="trade.screenshot_url" alt="Trade screenshot" class="screenshot" />
+      </div>
+    }
+  </div>
+}

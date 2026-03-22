@@ -1,0 +1,95 @@
+<div class="page-header">
+  <h1>交易記錄</h1>
+  <a routerLink="/trades/new" class="btn btn-primary">+ 新增交易</a>
+</div>
+
+<div class="card filter-bar">
+  <div class="filters">
+    <div class="filter-group">
+      <input type="text" placeholder="搜尋交易對..." [(ngModel)]="filterSymbol" (input)="loadTrades()" />
+    </div>
+    <div class="filter-group">
+      <select [(ngModel)]="filterStatus" (change)="loadTrades()">
+        <option value="">全部狀態</option>
+        <option value="open">持倉中</option>
+        <option value="closed">已平倉</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <select [(ngModel)]="filterDirection" (change)="loadTrades()">
+        <option value="">全部方向</option>
+        <option value="long">做多</option>
+        <option value="short">做空</option>
+      </select>
+    </div>
+    <button class="btn btn-secondary" (click)="clearFilters()">清除</button>
+  </div>
+</div>
+
+@if (loading) {
+  <p>載入中...</p>
+} @else if (trades.length === 0) {
+  <div class="card empty-state">
+    <p>尚無交易記錄</p>
+    <a routerLink="/trades/new" class="btn btn-primary">新增第一筆交易</a>
+  </div>
+} @else {
+  <div class="card">
+    <table>
+      <thead>
+        <tr>
+          <th>日期</th>
+          <th>交易對</th>
+          <th>方向</th>
+          <th>進場價</th>
+          <th>出場價</th>
+          <th>數量</th>
+          <th>盈虧</th>
+          <th>狀態</th>
+          <th>策略</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (trade of trades; track trade.id) {
+          <tr class="clickable" [routerLink]="['/trades', trade.id]">
+            <td>{{ trade.entry_date | date:'yyyy/MM/dd' }}</td>
+            <td><strong>{{ trade.symbol }}</strong></td>
+            <td>
+              <span class="badge" [class.long]="trade.direction === 'long'" [class.short]="trade.direction === 'short'">
+                {{ trade.direction === 'long' ? '做多' : '做空' }}
+              </span>
+            </td>
+            <td>{{ trade.entry_price | number:'1.2-8' }}</td>
+            <td>{{ trade.exit_price != null ? (trade.exit_price | number:'1.2-8') : '-' }}</td>
+            <td>{{ trade.quantity }}</td>
+            <td>
+              @if (trade.pnl != null) {
+                <span [class.pnl-positive]="trade.pnl > 0" [class.pnl-negative]="trade.pnl < 0">
+                  {{ trade.pnl >= 0 ? '+' : '' }}{{ trade.pnl | number:'1.2-2' }}
+                  @if (trade.pnl_percent != null) {
+                    <small>({{ trade.pnl_percent | number:'1.2-2' }}%)</small>
+                  }
+                </span>
+              } @else {
+                -
+              }
+            </td>
+            <td>
+              <span class="badge" [class.open]="trade.status === 'open'" [class.closed]="trade.status === 'closed'">
+                {{ trade.status === 'open' ? '持倉中' : '已平倉' }}
+              </span>
+            </td>
+            <td>{{ trade.strategy || '-' }}</td>
+            <td>
+              <div class="actions">
+                <a [routerLink]="['/trades', trade.id, 'edit']" class="btn btn-secondary btn-sm" (click)="$event.stopPropagation()">編輯</a>
+                <button class="btn btn-danger btn-sm" (click)="deleteTrade(trade.id, $event)">刪除</button>
+              </div>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}

@@ -1,0 +1,172 @@
+<div class="page-header">
+  <h1>{{ isEdit ? '編輯交易' : '新增交易' }}</h1>
+  <a routerLink="/trades" class="btn btn-secondary">返回列表</a>
+</div>
+
+<form (ngSubmit)="onSubmit()" class="trade-form">
+  <div class="card">
+    <h3>基本資訊</h3>
+    <div class="form-row">
+      <div class="form-group">
+        <label>交易對 *</label>
+        <select [(ngModel)]="form.symbol" name="symbol" (ngModelChange)="onSymbolChange()" required>
+          <option value="">選擇交易對</option>
+          @for (s of symbols; track s) {
+            <option [value]="s">{{ s }}</option>
+          }
+          <option value="__custom__">其他（自訂）</option>
+        </select>
+        @if (useCustomSymbol) {
+          <input type="text" [(ngModel)]="customSymbol" name="customSymbol" placeholder="輸入自訂交易對，例: NAS100" class="custom-symbol-input" required />
+        }
+      </div>
+      <div class="form-group">
+        <label>方向 *</label>
+        <select [(ngModel)]="form.direction" name="direction" required>
+          <option value="long">做多 (Long)</option>
+          <option value="short">做空 (Short)</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label>進場價格 *</label>
+        <input type="number" [(ngModel)]="form.entry_price" name="entry_price" step="any" required />
+      </div>
+      <div class="form-group">
+        <label>出場價格</label>
+        <input type="number" [(ngModel)]="form.exit_price" name="exit_price" step="any" />
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label>數量 *</label>
+        <input type="number" [(ngModel)]="form.quantity" name="quantity" step="any" required />
+      </div>
+      <div class="form-group">
+        <label>手續費</label>
+        <input type="number" [(ngModel)]="form.fees" name="fees" step="any" />
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label>進場日期 *</label>
+        <input type="date" [(ngModel)]="form.entry_date" name="entry_date" required />
+      </div>
+      <div class="form-group">
+        <label>出場日期</label>
+        <input type="date" [(ngModel)]="form.exit_date" name="exit_date" />
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>策略與分析</h3>
+    <div class="form-row">
+      <div class="form-group">
+        <label>策略</label>
+        <select [(ngModel)]="form.strategy" name="strategy">
+          <option value="">選擇策略</option>
+          @for (s of strategies; track s) {
+            <option [value]="s">{{ s }}</option>
+          }
+        </select>
+      </div>
+      <div class="form-group">
+        <label>時間框架</label>
+        <select [(ngModel)]="form.timeframe" name="timeframe">
+          <option value="">選擇時間框架</option>
+          @for (tf of timeframes; track tf) {
+            <option [value]="tf">{{ tf }}</option>
+          }
+        </select>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>進場邏輯</label>
+      <textarea [(ngModel)]="form.entry_reason" name="entry_reason" placeholder="描述你為什麼進場..."></textarea>
+    </div>
+
+    <div class="form-group">
+      <label>出場邏輯</label>
+      <textarea [(ngModel)]="form.exit_reason" name="exit_reason" placeholder="描述你為什麼出場..."></textarea>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>復盤筆記</h3>
+    <div class="form-group">
+      <label>復盤筆記</label>
+      <textarea [(ngModel)]="form.review_notes" name="review_notes" placeholder="交易結束後的反思與心得..." rows="5"></textarea>
+    </div>
+
+    <div class="form-group">
+      <label>交易評分 (1-5)</label>
+      <div class="rating-group">
+        @for (star of [1,2,3,4,5]; track star) {
+          <button type="button" class="star-btn" [class.active]="form.rating && form.rating >= star" (click)="form.rating = star">
+            ★
+          </button>
+        }
+        @if (form.rating) {
+          <button type="button" class="btn btn-secondary btn-sm" (click)="form.rating = undefined" style="margin-left: 8px">清除</button>
+        }
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>標籤</label>
+      <div class="tag-input-group">
+        <input type="text" [(ngModel)]="tagInput" name="tagInput" placeholder="輸入標籤後按 Enter"
+               (keydown.enter)="$event.preventDefault(); addTag()" />
+        <button type="button" class="btn btn-secondary" (click)="addTag()">添加</button>
+      </div>
+      @if (form.tags && form.tags.length > 0) {
+        <div class="tags">
+          @for (tag of form.tags; track tag) {
+            <span class="tag">
+              {{ tag }}
+              <button type="button" (click)="removeTag(tag)">&times;</button>
+            </span>
+          }
+        </div>
+      }
+    </div>
+
+    <div class="form-group">
+      <label>交易截圖</label>
+      <div class="image-upload-area">
+        @if (!imagePreview) {
+          <label class="upload-dropzone" for="imageInput">
+            <span class="upload-icon">📷</span>
+            <span>點擊上傳圖片</span>
+            <span class="upload-hint">支援 JPG、PNG、GIF、WebP（最大 10MB）</span>
+          </label>
+          <input type="file" id="imageInput" accept="image/*" (change)="onFileSelected($event)" hidden />
+        } @else {
+          <div class="image-preview">
+            <img [src]="imagePreview" alt="Screenshot preview" />
+            <div class="image-actions">
+              @if (uploading) {
+                <span class="uploading-text">上傳中...</span>
+              } @else {
+                <button type="button" class="btn btn-danger btn-sm" (click)="removeImage()">移除圖片</button>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+
+  <div class="form-actions">
+    <button type="submit" class="btn btn-primary" [disabled]="saving || uploading">
+      {{ saving ? '儲存中...' : (isEdit ? '更新交易' : '建立交易') }}
+    </button>
+    <a routerLink="/trades" class="btn btn-secondary">取消</a>
+  </div>
+</form>

@@ -1,0 +1,95 @@
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.stat-card {
+  text-align: center;
+
+  .stat-label {
+    font-size: 0.85rem;
+    color: #666;
+    margin-bottom: 8px;
+  }
+
+  .stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1a1a2e;
+  }
+}
+
+.section-card {
+  margin-bottom: 24px;
+
+  h3 {
+    margin: 0 0 16px;
+    color: #1a1a2e;
+  }
+}
+
+.equity-section {
+  .equity-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+
+    h3 { margin: 0; }
+
+    .capital-input {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      label {
+        font-size: 0.9rem;
+        color: #666;
+        white-space: nowrap;
+      }
+
+      input {
+        width: 140px;
+        padding: 6px 10px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        text-align: right;
+      }
+    }
+  }
+
+  .equity-summary {
+    display: flex;
+    gap: 12px;
+    align-items: baseline;
+    margin-bottom: 16px;
+
+    .equity-current {
+      font-size: 1.3rem;
+      font-weight: 700;
+    }
+
+    .equity-change {
+      font-size: 0.95rem;
+    }
+  }
+
+  .chart-container {
+    width: 100%;
+    height: 320px;
+
+    canvas {
+      width: 100%;
+      height: 100%;
+    }
+  }
+
+  .empty-chart {
+    text-align: center;
+    color: #999;
+    padding: 40px 0;
+  }
+}
