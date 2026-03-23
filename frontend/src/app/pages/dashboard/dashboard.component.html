@@ -43,15 +43,9 @@
     </div>
   </div>
 
-  <!-- Equity Curve Chart -->
+  <!-- Equity Curve Chart — canvas always in DOM, content toggled -->
   <div class="card section-card equity-section">
-    <div class="equity-header">
-      <h3>資金成長曲線</h3>
-      <div class="capital-input">
-        <label>初始資金：</label>
-        <input type="number" [value]="initialCapital" (change)="onCapitalChange($event)" min="0" step="1000" />
-      </div>
-    </div>
+    <h3>資金成長曲線</h3>
     @if (equityCurve.length > 0) {
       <div class="equity-summary">
         <span class="equity-current" [class.pnl-positive]="stats.totalPnl >= 0" [class.pnl-negative]="stats.totalPnl < 0">
@@ -61,10 +55,11 @@
           ({{ stats.totalPnl >= 0 ? '+' : '' }}{{ stats.totalPnl | number:'1.2-2' }} / {{ stats.totalPnl >= 0 ? '+' : '' }}{{ (stats.totalPnl / initialCapital * 100) | number:'1.2-2' }}%)
         </span>
       </div>
-      <div class="chart-container">
-        <canvas #equityCanvas></canvas>
-      </div>
-    } @else {
+    }
+    <div class="chart-container" [class.hidden]="equityCurve.length === 0">
+      <canvas #equityCanvas></canvas>
+    </div>
+    @if (equityCurve.length === 0) {
       <p class="empty-chart">尚無已平倉交易資料，完成交易後將顯示資金成長曲線</p>
     }
   </div>
@@ -88,36 +83,6 @@
                 {{ month.pnl >= 0 ? '+' : '' }}{{ month.pnl | number:'1.2-2' }}
               </td>
               <td>{{ month.trades }}</td>
-            </tr>
-          }
-        </tbody>
-      </table>
-    </div>
-  }
-
-  @if (stats.strategyBreakdown && stats.strategyBreakdown.length > 0) {
-    <div class="card section-card">
-      <h3>策略分析</h3>
-      <table>
-        <thead>
-          <tr>
-            <th>策略</th>
-            <th>交易數</th>
-            <th>勝率</th>
-            <th>總盈虧</th>
-            <th>平均盈虧</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (s of stats.strategyBreakdown; track s.strategy) {
-            <tr>
-              <td>{{ s.strategy }}</td>
-              <td>{{ s.count }}</td>
-              <td>{{ (s.wins / s.count * 100) | number:'1.0-0' }}%</td>
-              <td [class.pnl-positive]="s.totalPnl > 0" [class.pnl-negative]="s.totalPnl < 0">
-                {{ s.totalPnl >= 0 ? '+' : '' }}{{ s.totalPnl | number:'1.2-2' }}
-              </td>
-              <td>{{ s.avgPnl | number:'1.2-2' }}</td>
             </tr>
           }
         </tbody>

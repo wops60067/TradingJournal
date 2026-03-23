@@ -43,10 +43,9 @@
           <th>方向</th>
           <th>進場價</th>
           <th>出場價</th>
-          <th>數量</th>
+          <th>手數</th>
           <th>盈虧</th>
           <th>狀態</th>
-          <th>策略</th>
           <th>操作</th>
         </tr>
       </thead>
@@ -80,7 +79,6 @@
                 {{ trade.status === 'open' ? '持倉中' : '已平倉' }}
               </span>
             </td>
-            <td>{{ trade.strategy || '-' }}</td>
             <td>
               <div class="actions">
                 <a [routerLink]="['/trades', trade.id, 'edit']" class="btn btn-secondary btn-sm" (click)="$event.stopPropagation()">編輯</a>

@@ -4,57 +4,97 @@
 }
 
 .sidebar {
-  width: 240px;
-  background: #1a1a2e;
+  width: 220px;
+  background: #111;
   color: #fff;
-  padding: 20px 0;
+  display: flex;
+  flex-direction: column;
   flex-shrink: 0;
+  border-right: 1px solid #222;
 
   .logo {
-    padding: 0 20px 20px;
-    border-bottom: 1px solid rgba(255,255,255,0.1);
-    h2 {
-      margin: 0;
-      font-size: 1.3rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+
+    .logo-mark {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      background: #fff;
+      color: #111;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 13px;
+      letter-spacing: -0.03em;
+    }
+
+    .logo-text {
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: -0.02em;
     }
   }
 
   .nav-links {
     list-style: none;
-    padding: 10px 0;
+    padding: 8px;
     margin: 0;
+    flex: 1;
 
-    li a {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 12px 20px;
-      color: rgba(255,255,255,0.7);
-      text-decoration: none;
-      transition: all 0.2s;
-      font-size: 0.95rem;
+    li {
+      margin-bottom: 2px;
 
-      &:hover {
-        background: rgba(255,255,255,0.05);
-        color: #fff;
+      a {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 12px;
+        color: rgba(255, 255, 255, 0.5);
+        text-decoration: none;
+        transition: all 150ms ease;
+        font-size: 13px;
+        font-weight: 500;
+        border-radius: 6px;
+
+        &:hover {
+          color: rgba(255, 255, 255, 0.85);
+          background: rgba(255, 255, 255, 0.06);
+        }
+
+        &.active {
+          color: #fff;
+          background: rgba(255, 255, 255, 0.1);
+        }
       }
+    }
+  }
 
-      &.active {
-        background: rgba(255,255,255,0.1);
-        color: #fff;
-        border-left: 3px solid #4fc3f7;
-      }
+  .sidebar-footer {
+    padding: 16px 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
 
-      .icon {
-        font-size: 1.1rem;
-      }
+    .version {
+      font-size: 11px;
+      color: rgba(255, 255, 255, 0.25);
     }
   }
 }
 
+.nav-icon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
 .content {
   flex: 1;
-  background: #f5f7fa;
-  padding: 30px;
+  background: #f5f5f5;
+  padding: 32px;
   overflow-y: auto;
+  min-height: 100vh;
 }

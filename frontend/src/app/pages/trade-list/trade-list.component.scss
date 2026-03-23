@@ -1,19 +1,32 @@
 .filter-bar {
   margin-bottom: 16px;
+  padding: 16px 20px;
 
   .filters {
     display: flex;
-    gap: 12px;
+    gap: 10px;
     align-items: center;
     flex-wrap: wrap;
   }
 
   .filter-group {
     input, select {
-      padding: 8px 12px;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      font-size: 0.9rem;
+      padding: 7px 12px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 13px;
+      font-family: inherit;
+      color: var(--text);
+      background: var(--bg);
+
+      &:focus {
+        outline: none;
+        border-color: var(--accent);
+      }
+
+      &::placeholder {
+        color: var(--text-muted);
+      }
     }
   }
 }
@@ -24,16 +37,21 @@
 
 .empty-state {
   text-align: center;
-  padding: 60px 20px;
-  color: #666;
+  padding: 64px 20px;
+  color: var(--text-muted);
+
+  p {
+    margin-bottom: 16px;
+    font-size: 14px;
+  }
 }
 
 .actions {
   display: flex;
-  gap: 8px;
+  gap: 6px;
 }
 
 .btn-sm {
-  padding: 6px 12px;
-  font-size: 0.8rem;
+  padding: 5px 10px;
+  font-size: 12px;
 }

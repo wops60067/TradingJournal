@@ -50,4 +50,8 @@ export class TradeService {
     formData.append('image', file);
     return this.http.post<{ url: string }>('http://localhost:3000/api/upload', formData);
   }
+
+  getPrice(symbol: string): Observable<{ price: number | null; symbol: string }> {
+    return this.http.get<{ price: number | null; symbol: string }>(`http://localhost:3000/api/price/${encodeURIComponent(symbol)}`);
+  }
 }

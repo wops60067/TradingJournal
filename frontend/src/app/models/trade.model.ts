@@ -5,6 +5,7 @@ export interface Trade {
   entry_price: number;
   exit_price: number | null;
   quantity: number;
+  contract_size: number;
   entry_date: string;
   exit_date: string | null;
   status: 'open' | 'closed';
@@ -29,10 +30,10 @@ export interface TradeForm {
   entry_price: number;
   exit_price?: number | null;
   quantity: number;
+  contract_size: number;
   entry_date: string;
   exit_date?: string | null;
   fees?: number;
-  strategy?: string;
   timeframe?: string;
   entry_reason?: string;
   exit_reason?: string;
@@ -56,7 +57,6 @@ export interface TradeStats {
   monthlyPnl: { month: string; pnl: number; trades: number }[];
   bestTrade: Trade | null;
   worstTrade: Trade | null;
-  strategyBreakdown: { strategy: string; count: number; totalPnl: number; avgPnl: number; wins: number }[];
 }
 
 export interface EquityPoint {

@@ -39,12 +39,20 @@
           <span class="value">{{ trade.exit_price != null ? (trade.exit_price | number:'1.2-8') : '-' }}</span>
         </div>
         <div class="info-item">
-          <span class="label">數量</span>
+          <span class="label">手數</span>
           <span class="value">{{ trade.quantity }}</span>
+        </div>
+        <div class="info-item">
+          <span class="label">合約大小</span>
+          <span class="value">{{ trade.contract_size || 1 }}</span>
         </div>
         <div class="info-item">
           <span class="label">手續費</span>
           <span class="value">{{ trade.fees | number:'1.2-2' }}</span>
+        </div>
+        <div class="info-item">
+          <span class="label">時間框架</span>
+          <span class="value">{{ trade.timeframe || '-' }}</span>
         </div>
         <div class="info-item">
           <span class="label">進場日期</span>
@@ -53,14 +61,6 @@
         <div class="info-item">
           <span class="label">出場日期</span>
           <span class="value">{{ trade.exit_date ? (trade.exit_date | date:'yyyy/MM/dd') : '-' }}</span>
-        </div>
-        <div class="info-item">
-          <span class="label">策略</span>
-          <span class="value">{{ trade.strategy || '-' }}</span>
-        </div>
-        <div class="info-item">
-          <span class="label">時間框架</span>
-          <span class="value">{{ trade.timeframe || '-' }}</span>
         </div>
       </div>
     </div>

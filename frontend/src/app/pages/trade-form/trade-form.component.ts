@@ -5,6 +5,23 @@ import { Router, ActivatedRoute, RouterLink } from '@angular/router';
 import { TradeService } from '../../services/trade.service';
 import { TradeForm } from '../../models/trade.model';
 
+// Default contract sizes per symbol for CFD
+const CONTRACT_SIZES: Record<string, number> = {
+  'XAU/USD': 100,
+  'XAG/USD': 5000,
+  'GBP/JPY': 100000,
+  'EUR/USD': 100000,
+  'USD/JPY': 100000,
+  'GBP/USD': 100000,
+  'EUR/JPY': 100000,
+  'AUD/USD': 100000,
+  'NZD/USD': 100000,
+  'USD/CHF': 100000,
+  'USD/CAD': 100000,
+  'BTC/USDT': 1,
+  'ETH/USDT': 1,
+};
+
 @Component({
   selector: 'app-trade-form',
   standalone: true,
@@ -18,6 +35,9 @@ export class TradeFormComponent implements OnInit {
   saving = false;
   uploading = false;
   imagePreview: string | null = null;
+  fetchingPrice = false;
+
+  today = new Date().toISOString().split('T')[0];
 
   form: TradeForm = {
     symbol: '',
@@ -25,10 +45,10 @@ export class TradeFormComponent implements OnInit {
     entry_price: 0,
     exit_price: null,
     quantity: 0,
-    entry_date: new Date().toISOString().split('T')[0],
-    exit_date: null,
+    contract_size: 1,
+    entry_date: this.today,
+    exit_date: this.today,
     fees: 0,
-    strategy: '',
     timeframe: '',
     entry_reason: '',
     exit_reason: '',
@@ -44,7 +64,6 @@ export class TradeFormComponent implements OnInit {
   tagInput = '';
 
   symbols = ['XAU/USD', 'GBP/JPY', 'EUR/USD', 'USD/JPY', 'GBP/USD', 'EUR/JPY', 'AUD/USD', 'BTC/USDT', 'ETH/USDT'];
-  strategies = ['趨勢跟蹤', '突破', '回調', '均值回歸', '動量', '套利', '波段', '日內', '剝頭皮', '其他'];
   timeframes = ['1m', '5m', '15m', '30m', '1H', '4H', '1D', '1W'];
 
   constructor(
@@ -65,10 +84,10 @@ export class TradeFormComponent implements OnInit {
           entry_price: trade.entry_price,
           exit_price: trade.exit_price,
           quantity: trade.quantity,
+          contract_size: trade.contract_size || 1,
           entry_date: trade.entry_date,
           exit_date: trade.exit_date,
           fees: trade.fees,
-          strategy: trade.strategy || '',
           timeframe: trade.timeframe || '',
           entry_reason: trade.entry_reason || '',
           exit_reason: trade.exit_reason || '',
@@ -77,13 +96,11 @@ export class TradeFormComponent implements OnInit {
           tags: trade.tags ? JSON.parse(trade.tags) : [],
           screenshot_url: trade.screenshot_url || ''
         };
-        // Check if symbol is in preset list
         if (!this.symbols.includes(trade.symbol)) {
           this.useCustomSymbol = true;
           this.customSymbol = trade.symbol;
           this.form.symbol = '__custom__';
         }
-        // Set image preview
         if (trade.screenshot_url) {
           this.imagePreview = trade.screenshot_url.startsWith('/')
             ? `http://localhost:3000${trade.screenshot_url}`
@@ -96,9 +113,38 @@ export class TradeFormComponent implements OnInit {
   onSymbolChange() {
     if (this.form.symbol === '__custom__') {
       this.useCustomSymbol = true;
+      this.form.contract_size = 1;
     } else {
       this.useCustomSymbol = false;
       this.customSymbol = '';
+      this.form.contract_size = CONTRACT_SIZES[this.form.symbol] || 1;
+      if (this.form.symbol && !this.isEdit) {
+        this.fetchPrice(this.form.symbol);
+      }
+    }
+  }
+
+  fetchPrice(symbol: string) {
+    this.fetchingPrice = true;
+    this.tradeService.getPrice(symbol).subscribe({
+      next: (res) => {
+        if (res.price != null) {
+          this.form.entry_price = res.price;
+          this.form.exit_price = res.price;
+        }
+        this.fetchingPrice = false;
+      },
+      error: () => this.fetchingPrice = false
+    });
+  }
+
+  onCustomSymbolBlur() {
+    const sym = this.customSymbol.trim().toUpperCase();
+    if (sym) {
+      this.form.contract_size = CONTRACT_SIZES[sym] || 1;
+      if (!this.isEdit) {
+        this.fetchPrice(sym);
+      }
     }
   }
 
@@ -108,13 +154,10 @@ export class TradeFormComponent implements OnInit {
     if (!file) return;
 
     this.uploading = true;
-
-    // Show local preview immediately
     const reader = new FileReader();
     reader.onload = () => this.imagePreview = reader.result as string;
     reader.readAsDataURL(file);
 
-    // Upload to server
     this.tradeService.uploadImage(file).subscribe({
       next: (res) => {
         this.form.screenshot_url = res.url;
@@ -148,7 +191,6 @@ export class TradeFormComponent implements OnInit {
     this.saving = true;
     const payload = { ...this.form };
 
-    // Resolve actual symbol
     if (this.useCustomSymbol && this.customSymbol.trim()) {
       payload.symbol = this.customSymbol.trim().toUpperCase();
     }

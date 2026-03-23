@@ -11,13 +11,14 @@ import { TradeStats, EquityPoint } from '../../models/trade.model';
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss'
 })
-export class DashboardComponent implements OnInit {
+export class DashboardComponent implements OnInit, AfterViewInit {
   @ViewChild('equityCanvas') canvasRef!: ElementRef<HTMLCanvasElement>;
 
   stats: TradeStats | null = null;
   equityCurve: EquityPoint[] = [];
   loading = true;
-  initialCapital = 10000;
+  initialCapital = 343;
+  private viewReady = false;
 
   constructor(private tradeService: TradeService) {}
 
@@ -32,19 +33,27 @@ export class DashboardComponent implements OnInit {
     });
   }
 
+  ngAfterViewInit() {
+    this.viewReady = true;
+  }
+
   loadEquityCurve() {
     this.tradeService.getEquityCurve().subscribe({
       next: (data) => {
         this.equityCurve = data;
-        setTimeout(() => this.drawChart(), 0);
+        // Wait for Angular to finish rendering, then draw
+        this.scheduleDrawChart();
       }
     });
   }
 
-  onCapitalChange(event: Event) {
-    const value = (event.target as HTMLInputElement).value;
-    this.initialCapital = parseFloat(value) || 0;
-    this.drawChart();
+  private scheduleDrawChart() {
+    // Use requestAnimationFrame to ensure the DOM layout is complete
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        this.drawChart();
+      });
+    });
   }
 
   drawChart() {
@@ -54,17 +63,24 @@ export class DashboardComponent implements OnInit {
     const ctx = canvas.getContext('2d')!;
     const dpr = window.devicePixelRatio || 1;
     const rect = canvas.getBoundingClientRect();
+
+    // Safety: if canvas has no size yet, retry
+    if (rect.width === 0 || rect.height === 0) {
+      requestAnimationFrame(() => this.drawChart());
+      return;
+    }
+
     canvas.width = rect.width * dpr;
     canvas.height = rect.height * dpr;
     ctx.scale(dpr, dpr);
 
     const w = rect.width;
     const h = rect.height;
-    const pad = { top: 20, right: 20, bottom: 40, left: 70 };
+    const pad = { top: 20, right: 40, bottom: 40, left: 70 };
     const chartW = w - pad.left - pad.right;
     const chartH = h - pad.top - pad.bottom;
 
-    // Build data points: starting capital + each trade
+    // Build data points: starting capital + each daily point
     const points = [
       { date: '', value: this.initialCapital },
       ...this.equityCurve.map(p => ({ date: p.date, value: this.initialCapital + p.cumulative }))
@@ -79,11 +95,11 @@ export class DashboardComponent implements OnInit {
     ctx.clearRect(0, 0, w, h);
 
     // Background
-    ctx.fillStyle = '#fff';
+    ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, w, h);
 
     // Grid lines
-    ctx.strokeStyle = '#f0f0f0';
+    ctx.strokeStyle = '#f5f5f5';
     ctx.lineWidth = 1;
     const gridLines = 5;
     for (let i = 0; i <= gridLines; i++) {
@@ -95,8 +111,8 @@ export class DashboardComponent implements OnInit {
 
       // Y-axis labels
       const val = maxVal - (range / gridLines) * i;
-      ctx.fillStyle = '#999';
-      ctx.font = '11px system-ui';
+      ctx.fillStyle = '#a3a3a3';
+      ctx.font = '11px Inter, system-ui';
       ctx.textAlign = 'right';
       ctx.fillText(val.toFixed(0), pad.left - 8, y + 4);
     }
@@ -110,11 +126,11 @@ export class DashboardComponent implements OnInit {
     const lastValue = points[points.length - 1].value;
     const isPositive = lastValue >= this.initialCapital;
     if (isPositive) {
-      gradient.addColorStop(0, 'rgba(6, 214, 160, 0.3)');
-      gradient.addColorStop(1, 'rgba(6, 214, 160, 0.02)');
+      gradient.addColorStop(0, 'rgba(22, 163, 74, 0.15)');
+      gradient.addColorStop(1, 'rgba(22, 163, 74, 0.01)');
     } else {
-      gradient.addColorStop(0, 'rgba(239, 71, 111, 0.02)');
-      gradient.addColorStop(1, 'rgba(239, 71, 111, 0.3)');
+      gradient.addColorStop(0, 'rgba(220, 38, 38, 0.01)');
+      gradient.addColorStop(1, 'rgba(220, 38, 38, 0.15)');
     }
 
     // Fill area
@@ -134,8 +150,8 @@ export class DashboardComponent implements OnInit {
     for (let i = 1; i < points.length; i++) {
       ctx.lineTo(getX(i), getY(points[i].value));
     }
-    ctx.strokeStyle = isPositive ? '#06d6a0' : '#ef476f';
-    ctx.lineWidth = 2.5;
+    ctx.strokeStyle = isPositive ? '#16a34a' : '#dc2626';
+    ctx.lineWidth = 2;
     ctx.lineJoin = 'round';
     ctx.stroke();
 
@@ -144,7 +160,7 @@ export class DashboardComponent implements OnInit {
       for (let i = 0; i < points.length; i++) {
         ctx.beginPath();
         ctx.arc(getX(i), getY(points[i].value), 3, 0, Math.PI * 2);
-        ctx.fillStyle = isPositive ? '#06d6a0' : '#ef476f';
+        ctx.fillStyle = isPositive ? '#16a34a' : '#dc2626';
         ctx.fill();
       }
     }
@@ -153,19 +169,22 @@ export class DashboardComponent implements OnInit {
     const datePoints = points.filter(p => p.date);
     const labelCount = Math.min(6, datePoints.length);
     const step = Math.max(1, Math.floor(datePoints.length / labelCount));
-    ctx.fillStyle = '#999';
-    ctx.font = '11px system-ui';
+    ctx.fillStyle = '#a3a3a3';
+    ctx.font = '11px Inter, system-ui';
     ctx.textAlign = 'center';
     for (let i = 0; i < datePoints.length; i += step) {
-      const idx = i + 1; // +1 because first point is the initial capital with no date
+      const idx = i + 1;
       const x = getX(idx);
-      ctx.fillText(datePoints[i].date, x, h - pad.bottom + 20);
+      // Shorten date: "2026-03-23" → "03/23"
+      const d = datePoints[i].date;
+      const short = d.length >= 10 ? d.substring(5).replace('-', '/') : d;
+      ctx.fillText(short, x, h - pad.bottom + 20);
     }
 
     // Starting capital line (dashed)
     const capitalY = getY(this.initialCapital);
-    ctx.setLineDash([5, 5]);
-    ctx.strokeStyle = '#aaa';
+    ctx.setLineDash([4, 4]);
+    ctx.strokeStyle = '#d4d4d4';
     ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.moveTo(pad.left, capitalY);
@@ -173,7 +192,7 @@ export class DashboardComponent implements OnInit {
     ctx.stroke();
     ctx.setLineDash([]);
 
-    ctx.fillStyle = '#aaa';
+    ctx.fillStyle = '#a3a3a3';
     ctx.textAlign = 'left';
     ctx.fillText(`初始: ${this.initialCapital.toLocaleString()}`, pad.left + 4, capitalY - 6);
   }

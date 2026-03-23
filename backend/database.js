@@ -30,6 +30,7 @@ db.exec(`
     rating INTEGER CHECK(rating >= 1 AND rating <= 5),
     tags TEXT,
     screenshot_url TEXT,
+    contract_size REAL DEFAULT 1,
     created_at TEXT DEFAULT (datetime('now')),
     updated_at TEXT DEFAULT (datetime('now'))
   );
@@ -39,5 +40,16 @@ db.exec(`
     name TEXT UNIQUE NOT NULL
   );
 `);
+
+// Migration: add contract_size column if missing
+try {
+  const columns = db.prepare("PRAGMA table_info(trades)").all();
+  const hasContractSize = columns.some(c => c.name === 'contract_size');
+  if (!hasContractSize) {
+    db.exec("ALTER TABLE trades ADD COLUMN contract_size REAL DEFAULT 1");
+  }
+} catch (e) {
+  // Column already exists
+}
 
 module.exports = db;

@@ -35,6 +35,46 @@ app.post('/api/upload', upload.single('image'), (req, res) => {
   res.json({ url: `/uploads/${req.file.filename}` });
 });
 
+// Yahoo Finance symbol mapping
+const YAHOO_SYMBOL_MAP = {
+  'XAUUSD': 'GC=F',       // Gold futures
+  'XAGUSD': 'SI=F',       // Silver futures
+  'BTCUSDT': 'BTC-USD',
+  'BTCUSD': 'BTC-USD',
+  'ETHUSDT': 'ETH-USD',
+  'ETHUSD': 'ETH-USD',
+};
+
+function toYahooSymbol(symbol) {
+  const s = symbol.toUpperCase().replace('/', '');
+  if (YAHOO_SYMBOL_MAP[s]) return YAHOO_SYMBOL_MAP[s];
+  // Forex pairs: EURUSD -> EURUSD=X
+  return `${s}=X`;
+}
+
+// Fetch current price for a symbol
+app.get('/api/price/:symbol', async (req, res) => {
+  // Disable caching so price is always fresh
+  res.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+  res.set('Pragma', 'no-cache');
+  try {
+    const yahooSymbol = toYahooSymbol(req.params.symbol);
+    const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(yahooSymbol)}?interval=1d&range=1d`;
+    const response = await fetch(url, {
+      headers: { 'User-Agent': 'Mozilla/5.0' }
+    });
+    const data = await response.json();
+    const meta = data?.chart?.result?.[0]?.meta;
+    if (meta && meta.regularMarketPrice) {
+      res.json({ price: meta.regularMarketPrice, symbol: req.params.symbol });
+    } else {
+      res.json({ price: null, symbol: req.params.symbol });
+    }
+  } catch (e) {
+    res.json({ price: null, symbol: req.params.symbol });
+  }
+});
+
 // API routes
 app.use('/api/trades', tradesRouter);
 
