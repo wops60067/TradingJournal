@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm --version)",
+      "Bash(ng version:*)",
+      "Bash(mkdir -p backend)",
+      "Bash(npm init:*)",
+      "Bash(npm install:*)",
+      "Bash(node:*)",
+      "Bash(ng new:*)",
+      "Bash(npx ng:*)"
+    ]
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pip install:*)",
+      "Bash(pip3 install:*)",
+      "Bash(brew install:*)",
+      "Bash(pipx install:*)",
+      "Bash(find /Users/leo/trading_journal/backend -not -path */node_modules/* -not -path */.claude/* -type f)",
+      "Bash(grep -E '\\\\.\\(ts|html|scss\\)$')",
+      "Bash(npm install:*)",
+      "Bash(npx ng:*)",
+      "Bash(lsof -ti:3000)",
+      "Bash(xargs kill:*)",
+      "Bash(lsof -ti:8080)",
+      "Bash(curl -s http://localhost:3000/api/trades/equity-curve)",
+      "Bash(git init:*)",
+      "Bash(git remote:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)"
+    ]
+  }
+}
