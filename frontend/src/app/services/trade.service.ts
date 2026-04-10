@@ -7,7 +7,8 @@ import { Trade, TradeForm, TradeStats } from '../models/trade.model';
   providedIn: 'root'
 })
 export class TradeService {
-  private apiUrl = 'http://localhost:3000/api/trades';
+  private baseUrl = window.location.origin;
+  private apiUrl = `${this.baseUrl}/api/trades`;
 
   constructor(private http: HttpClient) {}
 
@@ -48,10 +49,10 @@ export class TradeService {
   uploadImage(file: File): Observable<{ url: string }> {
     const formData = new FormData();
     formData.append('image', file);
-    return this.http.post<{ url: string }>('http://localhost:3000/api/upload', formData);
+    return this.http.post<{ url: string }>(`${this.baseUrl}/api/upload`, formData);
   }
 
   getPrice(symbol: string): Observable<{ price: number | null; symbol: string }> {
-    return this.http.get<{ price: number | null; symbol: string }>(`http://localhost:3000/api/price/${encodeURIComponent(symbol)}`);
+    return this.http.get<{ price: number | null; symbol: string }>(`${this.baseUrl}/api/price/${encodeURIComponent(symbol)}`);
   }
 }

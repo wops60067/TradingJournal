@@ -103,7 +103,7 @@ export class TradeFormComponent implements OnInit {
         }
         if (trade.screenshot_url) {
           this.imagePreview = trade.screenshot_url.startsWith('/')
-            ? `http://localhost:3000${trade.screenshot_url}`
+            ? `${window.location.origin}${trade.screenshot_url}`
             : trade.screenshot_url;
         }
       });

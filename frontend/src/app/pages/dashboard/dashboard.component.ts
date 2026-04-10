@@ -17,7 +17,7 @@ export class DashboardComponent implements OnInit, AfterViewInit {
   stats: TradeStats | null = null;
   equityCurve: EquityPoint[] = [];
   loading = true;
-  initialCapital = 343;
+  initialCapital = 100;
   private viewReady = false;
 
   constructor(private tradeService: TradeService) {}
